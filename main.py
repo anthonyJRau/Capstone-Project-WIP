@@ -23,8 +23,10 @@ from utils.kitti_utils import save_results_kitti
 from utils.nusc_utils import save_results_nuscenes, save_results_nuscenes_for_motion
 from utils.waymo_utils.convert_result import save_results_waymo
 
+logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 
 def run(scene_id, scenes_data, cfg, args, tracking_results):
+    logging.debug(f'run called for scene_id: {scene_id}, cfg: {cfg}')
     """
     Info: This function tracks objects in a given scene, processes frame data, and stores tracking results.
     Parameters:
@@ -88,6 +90,7 @@ def run(scene_id, scenes_data, cfg, args, tracking_results):
 
 
 if __name__ == "__main__":
+    logging.debug('main.py __main__ entry')
     parser = argparse.ArgumentParser(description="MCTrack")
     parser.add_argument(
         "--dataset",

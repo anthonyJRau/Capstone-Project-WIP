@@ -4,9 +4,9 @@
 
 import argparse
 
-from convert_kitti import kitti_main
+# from convert_kitti import kitti_main
 from convert_nuscenes import nuscenes_main
-from convert_waymo import waymo_main
+# from convert_waymo import waymo_main
 
 kitti_cfg = {
     "raw_data_path": "data/kitti/datasets",
@@ -17,11 +17,11 @@ kitti_cfg = {
 }
 
 nuscenes_cfg = {
-    "raw_data_path": "s3://wangxiyang/open_datasets/nuscenes/raw_data/",
+    "raw_data_path": "data/nuscenes/datasets/",
     "dets_path": "data/nuscenes/detectors/",
-    "save_path": "data/base_version/nuscenes/",
-    "detector": "largekernel",  #  centerpoint(val) / largekernel(test) / ....
-    "split": "test",  # val / test
+    "save_path": "data/base_version_retry_2/nuscenes/",
+    "detector": "centerpoint",  #  centerpoint(val) / largekernel(test) / ....
+    "split": "val",  # val / test
 }
 
 waymo_cfg = {
@@ -40,15 +40,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.dataset == "kitti":
-        kitti_main(
-            kitti_cfg["raw_data_path"],
-            kitti_cfg["dets_path"],
-            kitti_cfg["detector"],
-            kitti_cfg["save_path"],
-            kitti_cfg["split"],
-        )
-    elif args.dataset == "nuscenes":
+    # if args.dataset == "kitti":
+    #     kitti_main(
+    #         kitti_cfg["raw_data_path"],
+    #         kitti_cfg["dets_path"],
+    #         kitti_cfg["detector"],
+    #         kitti_cfg["save_path"],
+    #         kitti_cfg["split"],
+    #     )
+    if args.dataset == "nuscenes":
         nuscenes_main(
             nuscenes_cfg["raw_data_path"],
             nuscenes_cfg["dets_path"],
@@ -56,11 +56,11 @@ if __name__ == "__main__":
             nuscenes_cfg["save_path"],
             nuscenes_cfg["split"],
         )
-    elif args.dataset == "waymo":
-        waymo_main(
-            waymo_cfg["raw_data_path"],
-            waymo_cfg["dets_path"],
-            waymo_cfg["detector"],
-            waymo_cfg["save_path"],
-            waymo_cfg["split"],
-        )
+    # elif args.dataset == "waymo":
+    #     waymo_main(
+    #         waymo_cfg["raw_data_path"],
+    #         waymo_cfg["dets_path"],
+    #         waymo_cfg["detector"],
+    #         waymo_cfg["save_path"],
+    #         waymo_cfg["split"],
+    #     )

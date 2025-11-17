@@ -4,12 +4,15 @@
 
 import numpy as np
 import lap
+import logging
 
 from tracker.cost_function import *
 from utils.utils import mask_tras_dets
 
+logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 
 def Greedy(cost_matrix, thresholds):
+    logging.debug(f'Greedy called with cost_matrix shape: {getattr(cost_matrix, "shape", None)}, thresholds: {thresholds}')
     """
     Refer: https://github.com/lixiaoyu2000/Poly-MOT/blob/main/utils/matching.py
     Info: This function implements the Greedy matching algorithm.
@@ -59,6 +62,7 @@ def Greedy(cost_matrix, thresholds):
 
 
 def Hungarian(cost_matrix, thresholds):
+    logging.debug(f'Hungarian called with cost_matrix shape: {getattr(cost_matrix, "shape", None)}, thresholds: {thresholds}')
     """
     Refer: https://github.com/lixiaoyu2000/Poly-MOT/blob/main/utils/matching.py
     Info: This function implements the Hungarian algorithm using the Linear Assignment Problem solver (lapjv).
@@ -105,6 +109,7 @@ def Hungarian(cost_matrix, thresholds):
 
 
 def match_trajs_and_dets(trajs, dets, cfg, transform_matrix=None, is_rv=False):
+    logging.debug(f'match_trajs_and_dets called with {len(trajs)} trajs, {len(dets)} dets, cfg: {cfg}, is_rv: {is_rv}')
     """
     Info: This function matches trajectories with detections using a cost matrix and a specified matching algorithm (Hungarian or Greedy).
     Parameters:
@@ -161,6 +166,7 @@ def match_trajs_and_dets(trajs, dets, cfg, transform_matrix=None, is_rv=False):
 
 
 def cost_calculate_general(trajs, dets, cfg, transform_matrix, is_rv=False):
+    logging.debug(f'cost_calculate_general called with {len(trajs)} trajs, {len(dets)} dets, cfg: {cfg}, is_rv: {is_rv}')
     cost_matrix = np.zeros((len(trajs), len(dets)))
 
     def choose_cost_func(is_rv, cost_mode):

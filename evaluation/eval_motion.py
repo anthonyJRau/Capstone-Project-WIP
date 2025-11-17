@@ -65,8 +65,9 @@ def eval_velocity_metric(eval_cfg, gt_frame_info, dt_frame_info, velocity_type):
     df.loc["Total"] = total_metrics
 
     print(f"Evaluating velocity type: {velocity_type}")
-    print(df)
-    print("\n")
+    # print(df)
+    df.to_csv(f"motion_eval_{velocity_type}.csv")
+    # print("\n")
 
 
 def eval_velocity_metric_wrapper(args):

@@ -210,8 +210,8 @@ class TrackingEval:
 
 
 if __name__ == "__main__":
-    result_path = "/data/projects/MOT_baseline/base3dmot/results/nuscenes/20241006_180139/results_for_motion.json"
-    nusc_path = "s3://wangxiyang/open_datasets/nuscenes/raw_data/"
+    result_path = "./results/nuscenes/20250921_201954/results_for_motion.json"
+    nusc_path = "./data/nuscenes/datasets/"
     gt_pkl_path = "./data/nuscenes/eval_velocity/gt_results.pkl"
     
     det_pkl_path = "./data/nuscenes/eval_velocity/det_results.pkl"

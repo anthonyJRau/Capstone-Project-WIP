@@ -43,6 +43,7 @@ class Base3DTracker:
 
         trajs = self.get_trajectory_bbox(self.all_trajs)
         trajs_cnt, dets_cnt = len(trajs), len(frame_info.bboxes)
+        print(trajs_cnt, dets_cnt)
         match_res, cost_matrix = match_trajs_and_dets(
             trajs, frame_info.bboxes, self.cfg
         )

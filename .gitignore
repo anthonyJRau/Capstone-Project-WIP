@@ -1,12 +1,12 @@
-**/__pycache__/
-**/results/
-evaluation/results/
-.vscode/
-output/
-outputs/
-output.txt
-data/base_version/waymo
-data
-new_data/
-val.json
-waymo-od/
+# Ignore everything
+*
+
+# But not these:
+!.gitignore
+!README.md
+
+# Allow Python source files
+!*.py
+
+# Allow folders so .py files inside them are visible
+!*/

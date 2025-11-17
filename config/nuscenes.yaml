@@ -8,7 +8,7 @@ DATASET: "nuscenes"
 SPLIT: "val" # val, test
 DETECTOR: centerpoint  # centerpoint, largekernel
 DATASET_ROOT: "data/nuscenes/datasets/" 
-DETECTIONS_ROOT: "data/base_version/nuscenes/"
+DETECTIONS_ROOT: "data/base_version_retry_2/nuscenes/"
 SAVE_PATH: "results/"
 TRACKING_MODE: 'ONLINE' # ONLINE / GLOBAL
 IS_RV_MATCHING: False  # True / False
