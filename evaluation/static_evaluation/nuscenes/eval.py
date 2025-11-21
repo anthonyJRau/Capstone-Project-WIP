@@ -14,12 +14,19 @@ def eval_nusc(args):
         raw_results = json.load(f)
         logging.info(f"Loaded results.json, keys: {list(raw_results.keys())}")
         if "results" in raw_results:
-            first_key = next(iter(raw_results["results"]))
-            logging.info(f"First sample_token: {first_key}")
-            logging.info(f"First prediction entry: {raw_results['results'][first_key][0]}")
-            logging.info(f"Total scenes in results: {len(raw_results['results'])}")
-            for scene, entries in raw_results['results'].items():
-                logging.info(f"Scene {scene} has {len(entries)} entries")
+            first_key = next(iter(raw_results["results"]), None)
+            if first_key is not None:
+                logging.info(f"First sample_token: {first_key}")
+                first_entries = raw_results["results"].get(first_key, [])
+                if first_entries:
+                    logging.info(f"First prediction entry: {first_entries[0]}")
+                else:
+                    logging.info("First prediction entry: <empty>")
+                logging.info(f"Total scenes in results: {len(raw_results['results'])}")
+                for scene, entries in raw_results['results'].items():
+                    logging.info(f"Scene {scene} has {len(entries)} entries")
+            else:
+                logging.info("Results section present but contains no sample tokens")
     eval_path = os.path.join(args["SAVE_PATH"], "eval_result/")
     nusc_path = args["DATASET_ROOT"]
     cfg = track_configs("tracking_nips_2019")

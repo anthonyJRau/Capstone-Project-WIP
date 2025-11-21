@@ -24,6 +24,23 @@ CATEGORY_MAP_TO_NUMBER : {
     "truck": 6,
 }
 
+CLASSIFIER:
+  ENABLED: False
+  CHECKPOINT_PATH: ""
+  DATAROOT: "data/nuscenes/datasets/"
+  VERSION: "v1.0-trainval"
+  DEVICE: null
+  STATIONARY_CLASS_INDEX: 0
+  CATEGORIES: ["bicycle"]
+  ROI_EXPAND_PIXELS: 0
+  ANNOTATE: False
+  LOG_ERRORS: True
+  VERBOSE: False
+  MATCHING_WEIGHT: 0.75
+  STATIONARY_LOCK_THRESHOLD: 0.5
+  STATIONARY_UNLOCK_THRESHOLD: 0.4
+  STATIONARY_Q_SCALE: 0.05
+
 MATCHING:
   BEV:
     # Predict, BackPredict, Fusion
