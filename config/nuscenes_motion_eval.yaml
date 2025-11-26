@@ -20,7 +20,8 @@ velocity_cfg:
   velocity_type: 'velocity_global'
   static_velocity_thresh: 1.0
   static_movement_thresh: 1.5
-  eval_cls: ["car", "pedestrian", "bicycle", "motorcycle", "bus", "trailer", "truck"]
+  eval_cls: ["bicycle"]
+  # eval_cls: ["car", "pedestrian", "bicycle", "motorcycle", "bus", "trailer", "truck"]
 
 threshold:
   match_threshold: 0.2

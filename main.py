@@ -217,6 +217,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Shortcut for --category-filter bicycle",
     )
+    parser.add_argument(
+        "--annotate-detections",
+        action="store_true",
+        help="Save annotated images of detections when using classifier",
+    )
     args = parser.parse_args()
 #     python main.py --dataset nuscenes --single-scene scene-0003 --enable-classifier --classifier-checkpoint "hyperparam_search_20251113_114329\best_model.pth" --bicycle-only
 #     python main.py --dataset nuscenes --enable-classifier --classifier-checkpoint "hyperparam_search_20251113_114329\best_model.pth" --bicycle-only -e -p 4
@@ -240,6 +245,8 @@ if __name__ == "__main__":
         cfg["CLASSIFIER"]["ENABLED"] = True
         if args.classifier_checkpoint:
             cfg["CLASSIFIER"]["CHECKPOINT_PATH"] = args.classifier_checkpoint
+        if args.annotate_detections:
+            cfg["CLASSIFIER"]["ANNOTATE"] = True
 
     checkpoint_path = cfg["CLASSIFIER"].get("CHECKPOINT_PATH")
     if checkpoint_path:

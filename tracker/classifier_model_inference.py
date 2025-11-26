@@ -1,6 +1,6 @@
 import math
 from typing import Dict, Optional, Tuple, Union
-
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -105,6 +105,7 @@ class MotionClassifierInference:
         self.nusc = nusc
         self.transform = transform or _default_transform()
         self.stationary_class_index = stationary_class_index
+        self._save_counter = 0
 
         self.model, self.model_config = self._load_model(checkpoint_path)
 
@@ -135,7 +136,7 @@ class MotionClassifierInference:
         self,
         bbox: Dict,
         sample_token: str,
-        annotate: bool = False,
+        annotate: bool = True,
         expand_pixels: int = 0,
     ) -> Dict:
         if bbox is None:
@@ -153,8 +154,24 @@ class MotionClassifierInference:
             annotated = full_image.copy()
             draw = ImageDraw.Draw(annotated)
             draw.rectangle(self._to_rectangle(bbox["bbox_image"].get("x1y1x2y2")), outline="red", width=3)
+            
+            # # Save annotated image
+            # save_dir = "annotated_images"
+            # os.makedirs(save_dir, exist_ok=True)
+            # self._save_counter += 1
+            # filename = f"{sample_token}_{camera_type}_{self._save_counter:05d}.png"
+            # save_path = os.path.join(save_dir, filename)
+            # annotated.save(save_path)
         else:
             annotated = None
+
+        # save_dir = "annotated_images"
+        # os.makedirs(save_dir, exist_ok=True)  # Create folder if it doesn't exist
+        # filename = f"{bbox['id']}.png"  # Use an identifier for the file name
+        # save_path = os.path.join(save_dir, filename)
+        # # Save the annotated image
+        # annotated.save(save_path)
+        # # run for single scene and store images of the detections. Are there lots of cases of missing bikes?
 
         full_tensor = self.transform(full_image).unsqueeze(0).to(self.device)
         roi_tensor = self.transform(roi).unsqueeze(0).to(self.device)
@@ -176,9 +193,11 @@ class MotionClassifierInference:
             "image_path": image_path,
         }
 
-        if annotate:
-            response["annotated_image"] = annotated
-            response["roi_image"] = roi
+        # Don't store PIL Image objects - they cause MemoryError in multiprocessing
+        # Images are already saved to disk when annotate=True
+        # if annotate:
+        #     response["annotated_image"] = annotated
+        #     response["roi_image"] = roi
 
         return response
 

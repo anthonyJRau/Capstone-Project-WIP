@@ -133,10 +133,14 @@ class Trajectory:
         self._stationary_categories = set(classifier_cfg.get("CATEGORIES", []))
         self._stationary_lock_threshold = classifier_cfg.get("STATIONARY_LOCK_THRESHOLD", 0.5)
         self._stationary_unlock_threshold = classifier_cfg.get("STATIONARY_UNLOCK_THRESHOLD", 0.4)
-        stationary_q_scale = classifier_cfg.get("STATIONARY_Q_SCALE", 0.1)
+        self._stationary_transition_frames = classifier_cfg.get("TRANSITION_FRAMES", 3)
+        self._min_track_length_for_lock = classifier_cfg.get("MIN_TRACK_LENGTH_FOR_LOCK", 5)
+        self._stationary_q_scale_min = classifier_cfg.get("STATIONARY_Q_SCALE", 0.05)
         self._pose_Q_default = self.kalman_filter_pose.Q.copy()
-        self._pose_Q_stationary = self._pose_Q_default * stationary_q_scale
+        self._pose_Q_stationary = self._pose_Q_default * self._stationary_q_scale_min
         self._is_stationary_locked = False
+        self._stationary_lock_count = 0
+        self._stationary_unlock_count = 0
 
         # if cfg["IS_RV_MATCHING"]:
         #     xywh = init_bbox.transform_bbox_tlbr2xywh()
@@ -277,13 +281,40 @@ class Trajectory:
         if prob is None:
             return
 
-        if not self._is_stationary_locked and prob >= self._stationary_lock_threshold:
-            self._enter_stationary_mode()
-        elif self._is_stationary_locked and prob < self._stationary_unlock_threshold:
-            self._exit_stationary_mode()
+        # Apply smooth Q matrix adjustment based on probability
+        scale_factor = self._interpolate_q_scale(prob)
+        self.kalman_filter_pose.Q = self._pose_Q_default * scale_factor
+
+        # Gradual state transition with frame counting
+        if not self._is_stationary_locked:
+            if prob >= self._stationary_lock_threshold:
+                self._stationary_lock_count += 1
+                if self._stationary_lock_count >= self._stationary_transition_frames:
+                    self._enter_stationary_mode()
+            else:
+                self._stationary_lock_count = 0
+        else:
+            if prob < self._stationary_unlock_threshold:
+                self._stationary_unlock_count += 1
+                if self._stationary_unlock_count >= self._stationary_transition_frames:
+                    self._exit_stationary_mode()
+            else:
+                self._stationary_unlock_count = 0
+
+    def _interpolate_q_scale(self, stationary_prob):
+        """Smoothly interpolate Q scale based on stationary probability."""
+        max_scale = 1.0
+        # Linear interpolation: high prob -> low scale (more constrained)
+        return max_scale - (stationary_prob * (max_scale - self._stationary_q_scale_min))
 
     def _enter_stationary_mode(self):
+        # Only lock if track is established
+        if self.track_length < self._min_track_length_for_lock:
+            self._stationary_lock_count = 0  # Reset counter
+            return
+        
         self._is_stationary_locked = True
+        self._stationary_lock_count = 0
         self.kalman_filter_pose.Q = self._pose_Q_stationary.copy()
         if self.kalman_filter_pose.x.shape[0] >= 4:
             self.kalman_filter_pose.x[2] = 0
@@ -291,6 +322,7 @@ class Trajectory:
 
     def _exit_stationary_mode(self):
         self._is_stationary_locked = False
+        self._stationary_unlock_count = 0
         self.kalman_filter_pose.Q = self._pose_Q_default.copy()
 
     def unmatch_update(self, frame_id):

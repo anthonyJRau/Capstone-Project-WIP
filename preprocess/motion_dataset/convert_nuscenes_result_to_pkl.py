@@ -210,10 +210,9 @@ class TrackingEval:
 
 
 if __name__ == "__main__":
-    result_path = "./results/nuscenes/20250921_201954/results_for_motion.json"
+    result_path = "./results/nuscenes/20251120_only_change_costs/results_for_motion.json"
     nusc_path = "./data/nuscenes/datasets/"
     gt_pkl_path = "./data/nuscenes/eval_velocity/gt_results.pkl"
-    
     det_pkl_path = "./data/nuscenes/eval_velocity/det_results.pkl"
     kalman_cv_pkl_path = "./data/nuscenes/eval_velocity/kalman_cv_results.pkl"
     diff_pkl_path = "./data/nuscenes/eval_velocity/diff_results.pkl"
@@ -231,7 +230,6 @@ if __name__ == "__main__":
     tracks_gt, tracks_det, tracks_kalman_cv, tracks_diff, tracks_curve = nusc_eval.get_tracks_gt()
     
     convert_gt_to_pkl(tracks_gt, gt_pkl_path)
-    
     convert_gt_to_pkl(tracks_det, det_pkl_path)
     convert_gt_to_pkl(tracks_kalman_cv, kalman_cv_pkl_path)
     convert_gt_to_pkl(tracks_diff, diff_pkl_path)

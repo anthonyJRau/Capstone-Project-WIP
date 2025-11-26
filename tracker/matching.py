@@ -243,6 +243,14 @@ def apply_classifier_alignment_bonus(base_cost, traj, det, cfg):
     if det_prob is None or traj_prob is None:
         return base_cost
 
+    # Scale weight by confidence (distance from 0.5)
+    det_confidence = abs(det_prob - 0.5) * 2  # 0 at 0.5, 1 at 0/1
+    traj_confidence = abs(traj_prob - 0.5) * 2
+    avg_confidence = (det_confidence + traj_confidence) / 2
+    
+    # Only apply bonus when both predictions are confident
+    effective_weight = weight * avg_confidence
+    
     prob_diff = abs(det_prob - traj_prob)
-    alignment_bonus = max(0.0, 1.0 - weight * prob_diff)
+    alignment_bonus = max(0.0, 1.0 - effective_weight * prob_diff)
     return base_cost * alignment_bonus
