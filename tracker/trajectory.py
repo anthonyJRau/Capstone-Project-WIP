@@ -263,9 +263,17 @@ class Trajectory:
 
         self.bboxes[-1].matched_score = matched_score 
 
+        # Classifier-aware track confirmation: lower threshold for stationary bikes
+        confirmed_det_threshold = self._confirmed_det_score
+        if (self.bboxes[-1].classifier_stationary_probability is not None and 
+            self.bboxes[-1].classifier_stationary_probability > self._stationary_lock_threshold):
+            # Lower detection score requirement for high-confidence stationary bikes
+            stationary_scale = self.cfg.get("CLASSIFIER", {}).get("STATIONARY_CONFIRMATION_SCALE", 0.6)
+            confirmed_det_threshold = self._confirmed_det_score * stationary_scale
+
         if self.track_length > self._confirmed_track_length or (
             matched_score > self._confirmed_match_score
-            and self.bboxes[-1].det_score > self._confirmed_det_score
+            and self.bboxes[-1].det_score > confirmed_det_threshold
         ):
             self.status_flag = 1
 
