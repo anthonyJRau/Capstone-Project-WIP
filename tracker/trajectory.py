@@ -372,13 +372,26 @@ class Trajectory:
         if len(self.bboxes) > self._cache_bbox_len:
             self.bboxes.pop(0)
 
+        # ========= Adaptive unmatch tolerance for stationary-locked tracks =========
+        max_unmatch = self._max_unmatch_len
+        max_predict = self._max_predict_len
+        
+        # Extend patience for stationary-locked tracks
+        # Rationale: Stationary bikes have stable predictions (velocity=0), so longer
+        # patience during brief occlusions helps recover tracks without degrading MOTP
+        if self._is_stationary_locked:
+            # Double the patience for stationary bikes (typically 1 frame -> 2-3 frames)
+            max_unmatch = min(self._max_unmatch_len * 2, 3)  # Cap at 3 frames
+            # Also extend prediction length slightly
+            max_predict = min(self._max_predict_len + 3, 16)  # Add 3 frames, cap at 16
+
         if self.status_flag == 0 and self.track_length > self._confirmed_track_length: 
             self.status_flag = 4
 
-        if self.status_flag == 1 and self.unmatch_length > self._max_unmatch_len:
+        if self.status_flag == 1 and self.unmatch_length > max_unmatch:
             self.status_flag = 2
 
-        if self.status_flag == 2 and self.unmatch_length > self._max_predict_len:
+        if self.status_flag == 2 and self.unmatch_length > max_predict:
             self.status_flag = 4
 
         return

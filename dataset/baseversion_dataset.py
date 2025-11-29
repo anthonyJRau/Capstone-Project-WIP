@@ -12,6 +12,45 @@ from tracker.bbox import BBox
 from utils.nusc_utils import filter_bboxes_with_nms
 
 
+def get_adaptive_threshold(base_threshold, classifier_result, cfg):
+    """
+    Compute adaptive detection threshold based on classifier stationary probability.
+    Uses smooth linear interpolation instead of binary thresholds to reduce track fragmentation.
+    
+    Args:
+        base_threshold: Base detection score threshold (e.g., 0.2 for bicycles)
+        classifier_result: Dict with 'stationary_probability' key
+        cfg: Configuration dict with CLASSIFIER settings
+    
+    Returns:
+        Adjusted threshold value
+        
+    Example:
+        prob=1.0 (stationary) → threshold × 0.85 = 0.17
+        prob=0.5 (uncertain)  → threshold × 1.0  = 0.20
+        prob=0.0 (moving)     → threshold × 1.15 = 0.23
+    """
+    if not cfg.get("CLASSIFIER", {}).get("ADAPTIVE_THRESHOLD_ENABLED", False):
+        return base_threshold
+    
+    if classifier_result is None:
+        return base_threshold
+    
+    prob = classifier_result.get("stationary_probability")
+    if prob is None:
+        return base_threshold
+    
+    # Get scale factors from config
+    min_scale = cfg["CLASSIFIER"].get("STATIONARY_THRESHOLD_SCALE", 0.85)
+    max_scale = cfg["CLASSIFIER"].get("MOVING_THRESHOLD_SCALE", 1.15)
+    
+    # Smooth linear interpolation: prob=1.0 → min_scale, prob=0.0 → max_scale
+    # This creates a continuous curve instead of binary jumps
+    scale = max_scale - (prob * (max_scale - min_scale))
+    
+    return base_threshold * scale
+
+
 class BaseVersionTrackingDataset:
     def __init__(
         self,
@@ -69,24 +108,10 @@ class BaseVersionTrackingDataset:
                 and (not category_filter or bbox["category"] in category_filter)
             ]
         )
-        if self.cfg["TRACKING_MODE"] == "ONLINE":
-            input_score = self.cfg["THRESHOLD"]["INPUT_SCORE"]["ONLINE"]
-
-        else:
-            input_score = self.cfg["THRESHOLD"]["INPUT_SCORE"]["OFFLINE"]
-        filtered_bboxes = [
-            bbox
-            for bbox in bboxes
-            if bbox["detection_score"]
-            > input_score[self.cfg["CATEGORY_MAP_TO_NUMBER"][bbox["category"]]]
-        ]
-
-        if self.cfg["DATASET"] == "nuscenes":
-            if len(filtered_bboxes) != 0:
-                filtered_bboxes = filter_bboxes_with_nms(filtered_bboxes, self.cfg)
-
+        
+        # Run classifier inference BEFORE filtering to enable adaptive thresholds
         if self.classifier_inference:
-            for bbox in filtered_bboxes:
+            for bbox in bboxes:
                 if bbox.get("category") not in self.classifier_categories:
                     continue
                 bbox_image = bbox.get("bbox_image") or {}
@@ -107,6 +132,34 @@ class BaseVersionTrackingDataset:
                             frame_id,
                             exc,
                         )
+        
+        # Apply detection score filtering with adaptive thresholds for classifier categories
+        if self.cfg["TRACKING_MODE"] == "ONLINE":
+            input_score = self.cfg["THRESHOLD"]["INPUT_SCORE"]["ONLINE"]
+        else:
+            input_score = self.cfg["THRESHOLD"]["INPUT_SCORE"]["OFFLINE"]
+        
+        filtered_bboxes = []
+        for bbox in bboxes:
+            category_num = self.cfg["CATEGORY_MAP_TO_NUMBER"][bbox["category"]]
+            base_threshold = input_score[category_num]
+            
+            # Use adaptive threshold if classifier result is available
+            if bbox.get("classifier_result") is not None:
+                threshold = get_adaptive_threshold(
+                    base_threshold,
+                    bbox["classifier_result"],
+                    self.cfg
+                )
+            else:
+                threshold = base_threshold
+            
+            if bbox["detection_score"] > threshold:
+                filtered_bboxes.append(bbox)
+
+        if self.cfg["DATASET"] == "nuscenes":
+            if len(filtered_bboxes) != 0:
+                filtered_bboxes = filter_bboxes_with_nms(filtered_bboxes, self.cfg)
 
         for bbox in filtered_bboxes:
             cur_frame.bboxes.append(BBox(frame_id, bbox))
