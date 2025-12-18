@@ -51,6 +51,14 @@ class BBox:
 
         self.unmatch_length = 0
 
+        classifier_result = bbox.get("classifier_result") or {}
+        self.classifier_prediction = classifier_result.get("prediction")
+        self.classifier_stationary_probability = classifier_result.get(
+            "stationary_probability"
+        )
+        self.classifier_raw_probabilities = classifier_result.get("raw_probabilities")
+        self.classifier_meta = classifier_result
+
     def backward_prediction(self):
         last_xy = np.array(self.global_xyz[:2]) - np.array(self.global_velocity) * 0.5
         return last_xy.tolist() + [self.global_xyz[2]]

@@ -66,7 +66,7 @@ def eval_velocity_metric(eval_cfg, gt_frame_info, dt_frame_info, velocity_type):
 
     print(f"Evaluating velocity type: {velocity_type}")
     # print(df)
-    df.to_csv(f"motion_eval_{velocity_type}.csv")
+    df.to_csv(f"./results/nuscenes/20251120_only_change_costs/motion_eval_{velocity_type}.csv")
     # print("\n")
 
 

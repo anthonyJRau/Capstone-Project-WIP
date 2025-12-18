@@ -200,14 +200,25 @@ def cost_calculate_general(trajs, dets, cfg, transform_matrix, is_rv=False):
             no_pred_cost = cal_cost_func(trk, det, cfg, cal_flag="BackPredict")
 
             if cost_state == "Predict":
-                cost_matrix[t, d] = pred_cost
+                base_cost = pred_cost
             elif cost_state == "BackPredict":
-                cost_matrix[t, d] = no_pred_cost
+                base_cost = no_pred_cost
             elif cost_state == "Fusion":
-                cost_matrix[t, d] = (
+                base_cost = (
                     cost_state_predict_ratio * pred_cost
                     + (1 - cost_state_predict_ratio) * no_pred_cost
                 )
+            else:
+                base_cost = pred_cost
+
+            base_cost = apply_classifier_alignment_bonus(
+                base_cost,
+                trk,
+                det,
+                cfg,
+            )
+
+            cost_matrix[t, d] = base_cost
 
     trajs_category = np.array([traj.bboxes[-1].category for traj in trajs])
     dets_category = np.array([det.category for det in dets])
@@ -215,3 +226,31 @@ def cost_calculate_general(trajs, dets, cfg, transform_matrix, is_rv=False):
     cost_matrix[same_category_mask == 0] = -np.inf
 
     return 1 - cost_matrix, trajs_category, dets_category
+
+
+def apply_classifier_alignment_bonus(base_cost, traj, det, cfg):
+    """Reduce the matching cost when classifier predictions agree."""
+    classifier_cfg = cfg.get("CLASSIFIER") or {}
+    weight = classifier_cfg.get("MATCHING_WEIGHT", 0.0)
+    if weight <= 0.0:
+        return base_cost
+
+    if det.category not in classifier_cfg.get("CATEGORIES", []):
+        return base_cost
+
+    det_prob = getattr(det, "classifier_stationary_probability", None)
+    traj_prob = getattr(traj.bboxes[-1], "classifier_stationary_probability", None)
+    if det_prob is None or traj_prob is None:
+        return base_cost
+
+    # Scale weight by confidence (distance from 0.5)
+    det_confidence = abs(det_prob - 0.5) * 2  # 0 at 0.5, 1 at 0/1
+    traj_confidence = abs(traj_prob - 0.5) * 2
+    avg_confidence = (det_confidence + traj_confidence) / 2
+    
+    # Only apply bonus when both predictions are confident
+    effective_weight = weight * avg_confidence
+    
+    prob_diff = abs(det_prob - traj_prob)
+    alignment_bonus = max(0.0, 1.0 - effective_weight * prob_diff)
+    return base_cost * alignment_bonus

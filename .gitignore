@@ -8,5 +8,8 @@
 # Allow Python source files
 !*.py
 
+# Allow files starting with "capstone_"
+!capstone_*
+
 # Allow folders so .py files inside them are visible
 !*/
