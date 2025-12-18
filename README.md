@@ -5,6 +5,7 @@
  - **Original MCTrack repository:** https://github.com/megvii-research/MCTrack  
  - **Original paper:** https://arxiv.org/abs/2409.16149
  - **My Capstone Contriubtion Paper and Results:** https://docs.google.com/document/d/1T8qHFaa2H-czNH0Wkj80EO3QBO8fCVeg_KbtSv-hm10/edit?tab=t.4tvh1dfehfzr
+ - **My Capstone Presentation:** https://docs.google.com/presentation/d/1dhqvE1QKrqPsbt5TDnSEReMH3SxO3tZbCx8OCp8pORA/edit?pli=1&slide=id.g3866867b23b_0_30#slide=id.g3866867b23b_0_30
 
  The goal of this capstone is to **study, reproduce, extend, and analyze** the MCTrack framework for academic purposes.  
  All core ideas, methodology, and baseline implementation credit belong to the original authors.
