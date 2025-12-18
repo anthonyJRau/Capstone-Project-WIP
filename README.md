@@ -1,3 +1,19 @@
+**Capstone Project Notice**
+
+ This repository is **my capstone project** and is **based on the prior work MCTrack: _A Unified 3D Multi-Object Tracking Framework for Autonomous Driving_**.
+
+ - **Original MCTrack repository:** https://github.com/megvii-research/MCTrack  
+ - **Original paper:** https://arxiv.org/abs/2409.16149
+ - **My Capstone Contriubtion Paper and Results:** https://docs.google.com/document/d/1T8qHFaa2H-czNH0Wkj80EO3QBO8fCVeg_KbtSv-hm10/edit?tab=t.4tvh1dfehfzr
+
+ The goal of this capstone is to **study, reproduce, extend, and analyze** the MCTrack framework for academic purposes.  
+ All core ideas, methodology, and baseline implementation credit belong to the original authors.
+
+ Any modifications, experiments, analyses, or extensions in this repository are part of the capstone work and should not be interpreted as official contributions to the original MCTrack project.
+
+ For further research, please refer to directions in their README file and on the nuScenes website.
+ From this point down the README file is from the origninal project.
+
 
 <div  align=center><img src="./docs/MC_logo.png" width="55%"></div>
 
